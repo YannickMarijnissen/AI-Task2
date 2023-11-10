@@ -1,3 +1,15 @@
+# streamlit_app.py
+
+# Install necessary libraries
+import subprocess
+import sys
+
+def install_libraries():
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas", "streamlit", "scikit-learn"])
+
+install_libraries()
+
+# Now import the libraries
 import pandas as pd
 import streamlit as st
 from sklearn.model_selection import train_test_split
