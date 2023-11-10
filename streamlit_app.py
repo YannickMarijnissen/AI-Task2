@@ -1,58 +1,40 @@
 import streamlit as st
-import itertools
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
-# Function to solve a cryptarithmetic puzzle
-def solve_cryptarithmetic(word1, word2, result):
-    # Create a set of unique characters in all words
-    unique_chars = set(word1 + word2 + result)
+# Load the dataset (replace 'your_dataset_filename.csv' with your actual file path)
+df = pd.read_csv('rocket_league_data.data')
 
-    # Check if there are more than 10 unique characters (0-9 digits)
-    if len(unique_chars) > 10:
-        st.write("Invalid input: More than 10 unique characters")
-        return
+# Split the data into features (X) and the target variable (y)
+X = df.drop('PerformanceLabel', axis=1)  # Assuming 'PerformanceLabel' is the target variable
+y = df['PerformanceLabel']
 
-    # Convert unique characters to a list and create a range of digits (0-9)
-    chars = list(unique_chars)
-    digits = range(10)
+# Split the data into a training set and a test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Iterate through all permutations of digits for unique characters
-    for perm in itertools.permutations(digits, len(unique_chars)):
-        char_to_digit = {char: digit for char, digit in zip(chars, perm)}
+# Create and train a Random Forest Classifier
+random_forest_model = RandomForestClassifier(random_state=42)
+random_forest_model.fit(X_train, y_train)
 
-        # Check if leading zeros are assigned to the words
-        if char_to_digit[word1[0]] == 0 or char_to_digit[word2[0]] == 0 or char_to_digit[result[0]] == 0:
-            continue
+# Streamlit App
+st.title("Rocket League ML Task - Benchmarking Two ML Algorithms")
 
-        # Convert words to numbers using the character-to-digit mapping
-        num1 = int(''.join(str(char_to_digit[char]) for char in word1))
-        num2 = int(''.join(str(char_to_digit[char]) for char in word2))
-        res = int(''.join(str(char_to_digit[char]) for char in result))
+# User input for prediction
+st.sidebar.header("User Input")
+# Add input elements for Rocket League metrics
+# For example:
+# goals = st.sidebar.slider("Select goals scored", min_value=0, max_value=10, value=5)
 
-        # Check if the addition of num1 and num2 equals res
-        if num1 + num2 == res:
-            num_mapping = {char: char_to_digit[char] for char in chars}
-            # Display the solution with numbers and the number correspondence
-            st.write(f"Solution found: {word1} + {word2} = {result} ({num1} + {num2} = {res})")
-            st.write("Number Correspondence:")
-            for char, digit in num_mapping.items():
-                st.write(f"{char} = {digit}")
-            return
+# Use the selected metrics to make a prediction
+# prediction = random_forest_model.predict([[goals, ...]])  # Include other selected metrics
 
-    # If no solution is found, display a message
-    st.write("No solution found")
+# Display the prediction
+# st.sidebar.subheader("Prediction:")
+# st.sidebar.write(prediction)
 
-if __name__ == "__main__":
-    st.title("Cryptarithmetic Puzzle Solver")
+# Add more features, visualizations, and customization based on your needs
+# For example, you can display the dataset, evaluation metrics, etc.
 
-    # Get user input for the cryptarithmetic puzzle
-    puzzle = st.text_input("Enter the cryptarithmetic puzzle (e.g., 'TO + GO = OUT'): ")
-
-    if st.button("Solve"):
-        parts = puzzle.split()
-        # Check if the input format is valid
-        if len(parts) != 5 or parts[1] != '+' or parts[3] != '=':
-            st.write("Invalid input format. Please use the format 'WORD1 + WORD2 = RESULT'.")
-        else:
-            word1, word2, result = parts[0], parts[2], parts[4]
-            # Call the solve_cryptarithmetic function to solve the puzzle
-            solve_cryptarithmetic(word1, word2, result)
+# Remember to run the app using: streamlit run your_app_filename.py
