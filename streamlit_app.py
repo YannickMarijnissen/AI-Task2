@@ -1,19 +1,10 @@
-import subprocess
-import sys
 import pandas as pd
 import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
-
-def install_package(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-# Install required packages
-install_package("pandas")
-install_package("streamlit")
-install_package("scikit-learn")
 
 # Load the dataset with space as the delimiter
 file_path = 'rocket_league_skillshots.data'
