@@ -1,40 +1,58 @@
-import streamlit as st
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+import streamlit as st
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder
 
-# Load the dataset (replace 'your_dataset_filename.csv' with your actual file path)
-df = pd.read_csv('rocket_league_data.data')
+# Load the dataset with space as the delimiter
+file_path = 'rocket_league_skillshots.data'
+df = pd.read_csv(file_path, delimiter=' ', header=None)
 
-# Split the data into features (X) and the target variable (y)
-X = df.drop('PerformanceLabel', axis=1)  # Assuming 'PerformanceLabel' is the target variable
-y = df['PerformanceLabel']
+# Display the data
+st.dataframe(df)
 
-# Split the data into a training set and a test set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Button to calculate accuracy
+if st.button('Calculate Accuracy'):
+    # Check if the dataset has numeric values
+    if df.applymap(lambda x: pd.to_numeric(x, errors='coerce')).notna().all().all():
+        # If numeric, split the data
+        X = df.iloc[:, :-1]
+        y = df.iloc[:, -1]
 
-# Create and train a Random Forest Classifier
-random_forest_model = RandomForestClassifier(random_state=42)
-random_forest_model.fit(X_train, y_train)
+        # Split the data into a training set and a test set
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Streamlit App
-st.title("Rocket League ML Task - Benchmarking Two ML Algorithms")
+        # Create and train a RandomForestClassifier
+        random_forest_model = RandomForestClassifier(random_state=42)
+        random_forest_model.fit(X_train, y_train)
 
-# User input for prediction
-st.sidebar.header("User Input")
-# Add input elements for Rocket League metrics
-# For example:
-# goals = st.sidebar.slider("Select goals scored", min_value=0, max_value=10, value=5)
+        # Make predictions on the test data
+        y_pred_rf = random_forest_model.predict(X_test)
 
-# Use the selected metrics to make a prediction
-# prediction = random_forest_model.predict([[goals, ...]])  # Include other selected metrics
+        # Calculate the accuracy of the RandomForest model
+        accuracy_rf = accuracy_score(y_test, y_pred_rf)
 
-# Display the prediction
-# st.sidebar.subheader("Prediction:")
-# st.sidebar.write(prediction)
+        # Display the model accuracy
+        st.write("Random Forest Model Accuracy:", accuracy_rf)
+    else:
+        # If not numeric, encode categorical variables
+        label_encoder = LabelEncoder()
+        df_encoded = df.apply(lambda col: label_encoder.fit_transform(col.astype(str)))
 
-# Add more features, visualizations, and customization based on your needs
-# For example, you can display the dataset, evaluation metrics, etc.
+        # Split the data into a training set and a test set
+        X_train, X_test, y_train, y_test = train_test_split(df_encoded.iloc[:, :-1], df_encoded.iloc[:, -1], test_size=0.2, random_state=42)
 
-# Remember to run the app using: streamlit run your_app_filename.py
+        # Create and train a RandomForestClassifier
+        random_forest_model = RandomForestClassifier(random_state=42)
+        random_forest_model.fit(X_train, y_train)
+
+        # Make predictions on the test data
+        y_pred_rf = random_forest_model.predict(X_test)
+
+        # Calculate the accuracy of the RandomForest model
+        accuracy_rf = accuracy_score(y_test, y_pred_rf)
+
+        # Display the model accuracy
+        st.write("Random Forest Model Accuracy:", accuracy_rf)
